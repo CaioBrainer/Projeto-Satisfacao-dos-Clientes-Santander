@@ -12,14 +12,14 @@ from sklearn.metrics import roc_curve
 from sklearn.decomposition import PCA
 
 
-def plot_multiple_CM(modelo, X_treino, X_teste, y_treino, y_teste):
+def plot_multiple_cm(modelo, x_treino, x_teste, y_treino, y_teste):
     # realiza as previsões:
-    previsoes_treino = modelo.predict(X_treino)
-    previsoes_teste = modelo.predict(X_teste)
+    previsoes_treino = modelo.predict(x_treino)
+    previsoes_teste = modelo.predict(x_teste)
 
     # calcula a matriz de confusão:
-    CM_treino = confusion_matrix(y_treino, previsoes_treino, normalize='true')  # normalize='pred'
-    CM_teste = confusion_matrix(y_teste, previsoes_teste, normalize='true')  # normalize='pred'
+    cm_treino = confusion_matrix(y_treino, previsoes_treino, normalize='true')  # normalize='pred'
+    cm_teste = confusion_matrix(y_teste, previsoes_teste, normalize='true')  # normalize='pred'
 
     # projeta a figura:
     fig, ax = plt.subplots(1, 2, figsize=(15, 10))
@@ -27,31 +27,28 @@ def plot_multiple_CM(modelo, X_treino, X_teste, y_treino, y_teste):
     ax[1].set_title("TESTE")
 
     ConfusionMatrixDisplay(
-        confusion_matrix=CM_treino,
+        confusion_matrix=cm_treino,
         display_labels=['Satisfeito', 'Insatisfeito']).plot(ax=ax[0], colorbar=False, cmap='magma')
 
     ConfusionMatrixDisplay(
-        confusion_matrix=CM_teste,
+        confusion_matrix=cm_teste,
         display_labels=['Satisfeito', 'Insatisfeito']).plot(ax=ax[1], colorbar=False, cmap='magma')
 
-    plt.subplots_adjust(wspace=0.40, hspace=0.1);
+    plt.subplots_adjust(wspace=0.40, hspace=0.1)
 
 
-def sobreamostragem(modelo, X_treino, X_teste, y_treino, y_teste):
+def sobreamostragem(modelo, x_treino, x_teste, y_treino, y_teste):
     # syntetic minority oversample tecnique
     smote = SMOTE()
-    X_smote, y_smote = smote.fit_resample(X_treino, y_treino)
+    x_smote, y_smote = smote.fit_resample(x_treino, y_treino)
 
-    modelo.fit(X_smote, y_smote)
-
-    smote_pred = modelo.predict(X_smote)
-    cm = confusion_matrix(y_smote, smote_pred, normalize='true')
-
-    plot_multiple_CM(modelo, X_smote, X_teste, y_smote, y_teste);
+    modelo.fit(x_smote, y_smote)
+    # Plotando a matriz de confusão do modelo com sobreamostragem
+    plot_multiple_cm(modelo, x_smote, x_teste, y_smote, y_teste)
 
 
-def area_sob_curva(modelo, X, y):
-    y_score = modelo.predict_proba(X)[:, 1]
+def area_sob_curva(modelo, x, y):
+    y_score = modelo.predict_proba(x)[:, 1]
     falsos_positivos_taxa, verdadeiros_positivos_taxa, threshold1 = roc_curve(y, y_score)
 
     plt.subplots(figsize=(8, 8))
@@ -69,14 +66,14 @@ def treino_pca(modelo, x_treino, x_teste, y_treino, y_teste, taxa_de_variancia=0
     pca_var = PCA(n_components=taxa_de_variancia)
     pca_treino = pca_var.fit_transform(x_treino)
     pca_teste = pca_var.transform(x_teste)
-    X_treino_pca = pd.DataFrame(pca_treino)
-    X_teste_pca = pd.DataFrame(pca_teste)
+    x_treino_pca = pd.DataFrame(pca_treino)
+    x_teste_pca = pd.DataFrame(pca_teste)
 
     # Treinando o modelo
-    modelo.fit(X_treino_pca, np.ravel(y_treino));
+    modelo.fit(x_treino_pca, np.ravel(y_treino))
 
     # Plotando a matrix de confusão
-    plot_multiple_CM(modelo, X_treino_pca, X_teste_pca, y_treino, y_teste)
+    plot_multiple_cm(modelo, x_treino_pca, x_teste_pca, y_treino, y_teste)
 
 
 def diagrama_variancia(x, taxa_varianca):
