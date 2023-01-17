@@ -10,6 +10,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import roc_curve
 from sklearn.decomposition import PCA
+from scipy import stats
 
 
 def plot_multiple_cm(modelo, x_treino, x_teste, y_treino, y_teste):
@@ -95,3 +96,19 @@ def diagrama_variancia(x, taxa_varianca):
     plt.legend(loc='best')
     plt.tight_layout()
     plt.show()
+
+
+def tratamento_outliers(dataframe, colunas):
+    zscore = np.abs(stats.zscore(dataframe))
+
+    indice = []
+
+    for coluna in colunas:
+        indice.append(zscore[(zscore[coluna] > 3)].index)
+
+    indice_todos = []
+    for lista in indice:
+        for valor in lista:
+            indice_todos.append(valor)
+
+    return indice_todos
